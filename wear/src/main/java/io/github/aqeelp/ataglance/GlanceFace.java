@@ -46,6 +46,8 @@ public class GlanceFace extends CanvasWatchFaceService {
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
 
+    int textraCount, messengerCount, snapchatCount, emailCount;
+
     /**
      * Update rate in milliseconds for interactive mode. We update once a second since seconds are
      * displayed in interactive mode.
@@ -112,6 +114,11 @@ public class GlanceFace extends CanvasWatchFaceService {
             mTextPaint.setTextAlign(Paint.Align.CENTER);
 
             mTime = new Time();
+
+            textraCount = 0;
+            messengerCount = 0;
+            snapchatCount = 0;
+            emailCount = 0;
         }
 
         @Override
@@ -172,7 +179,7 @@ public class GlanceFace extends CanvasWatchFaceService {
             Resources resources = GlanceFace.this.getResources();
             boolean isRound = insets.isRound();
             float textSize = resources.getDimension(isRound
-                    ? (R.dimen.digital_text_size_round * 2) : R.dimen.digital_text_size);
+                    ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
 
             mTextPaint.setTextSize(textSize);
         }
@@ -210,7 +217,9 @@ public class GlanceFace extends CanvasWatchFaceService {
             // Draw the background.
             canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
 
+            // Paint main clock:
             mTime.setToNow();
+            mTextPaint.setTextSize(80);
             String text = String.format("%d:%02d", mTime.hour % 12, mTime.minute);
             canvas.drawText(text, canvas.getWidth() / 2, mYOffset, mTextPaint);
 
@@ -219,8 +228,13 @@ public class GlanceFace extends CanvasWatchFaceService {
             smallPaint.setColor(mTextPaint.getColor());
             smallPaint.setTextSize(20);
             smallPaint.setTextAlign(Paint.Align.CENTER);
+
             // canvas.drawText("Textra: " + textraCount, canvas.getWidth() / 2, mYOffset + 20, smallPaint);
-            canvas.drawText("Textra: " + 0, canvas.getWidth() / 2, mYOffset + 20, smallPaint);
+            canvas.drawText("Textra: " + textraCount, canvas.getWidth() / 2, mYOffset + 50, smallPaint);
+            canvas.drawText("Messenger: " + messengerCount, canvas.getWidth() / 2, mYOffset + 70, smallPaint);
+            canvas.drawText("Snapchat: " + snapchatCount, canvas.getWidth() / 2, mYOffset + 90, smallPaint);
+            canvas.drawText("Gmail: " + emailCount, canvas.getWidth() / 2, mYOffset + 110, smallPaint);
+            textraCount++;
         }
 
         /**
