@@ -31,8 +31,10 @@ import android.os.Message;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
+import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 import java.util.TimeZone;
@@ -43,10 +45,12 @@ import java.util.concurrent.TimeUnit;
  * low-bit ambient mode, the text is drawn without anti-aliasing in ambient mode.
  */
 public class GlanceFace extends CanvasWatchFaceService {
+    private String TAG = "GlanceFace";
+
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
 
-    int textraCount, messengerCount, snapchatCount, emailCount;
+    private int textraCount, messengerCount, snapchatCount, emailCount;
 
     /**
      * Update rate in milliseconds for interactive mode. We update once a second since seconds are
@@ -234,7 +238,6 @@ public class GlanceFace extends CanvasWatchFaceService {
             canvas.drawText("Messenger: " + messengerCount, canvas.getWidth() / 2, mYOffset + 70, smallPaint);
             canvas.drawText("Snapchat: " + snapchatCount, canvas.getWidth() / 2, mYOffset + 90, smallPaint);
             canvas.drawText("Gmail: " + emailCount, canvas.getWidth() / 2, mYOffset + 110, smallPaint);
-            textraCount++;
         }
 
         /**
