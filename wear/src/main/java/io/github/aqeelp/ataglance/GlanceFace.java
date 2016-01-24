@@ -96,8 +96,9 @@ public class GlanceFace extends CanvasWatchFaceService {
             super.onCreate(holder);
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(GlanceFace.this)
-                    .setCardPeekMode(WatchFaceStyle.PEEK_MODE_VARIABLE)
-                    .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
+                    .setCardPeekMode(WatchFaceStyle.PEEK_MODE_SHORT)
+                    .setAmbientPeekMode(WatchFaceStyle.AMBIENT_PEEK_MODE_HIDDEN)
+                    .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_PERSISTENT)
                     .setShowSystemUiTime(false)
                     .build());
             Resources resources = GlanceFace.this.getResources();
@@ -108,6 +109,7 @@ public class GlanceFace extends CanvasWatchFaceService {
 
             mTextPaint = new Paint();
             mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
+            mTextPaint.setTextAlign(Paint.Align.CENTER);
 
             mTime = new Time();
         }
@@ -169,10 +171,8 @@ public class GlanceFace extends CanvasWatchFaceService {
             // Load resources that have alternate values for round watches.
             Resources resources = GlanceFace.this.getResources();
             boolean isRound = insets.isRound();
-            mXOffset = resources.getDimension(isRound
-                    ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
             float textSize = resources.getDimension(isRound
-                    ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
+                    ? (R.dimen.digital_text_size_round * 2) : R.dimen.digital_text_size);
 
             mTextPaint.setTextSize(textSize);
         }
@@ -210,12 +210,17 @@ public class GlanceFace extends CanvasWatchFaceService {
             // Draw the background.
             canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
 
-            // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
             mTime.setToNow();
-            String text = mAmbient
-                    ? String.format("%d:%02d", mTime.hour, mTime.minute)
-                    : String.format("%d:%02d:%02d", mTime.hour, mTime.minute, mTime.second);
-            canvas.drawText(text, mXOffset, mYOffset, mTextPaint);
+            String text = String.format("%d:%02d", mTime.hour % 12, mTime.minute);
+            canvas.drawText(text, canvas.getWidth() / 2, mYOffset, mTextPaint);
+
+            // canvas.drawOval(20, 160, 60, 220, mTextPaint);
+            Paint smallPaint = new Paint();
+            smallPaint.setColor(mTextPaint.getColor());
+            smallPaint.setTextSize(20);
+            smallPaint.setTextAlign(Paint.Align.CENTER);
+            // canvas.drawText("Textra: " + textraCount, canvas.getWidth() / 2, mYOffset + 20, smallPaint);
+            canvas.drawText("Textra: " + 0, canvas.getWidth() / 2, mYOffset + 20, smallPaint);
         }
 
         /**
