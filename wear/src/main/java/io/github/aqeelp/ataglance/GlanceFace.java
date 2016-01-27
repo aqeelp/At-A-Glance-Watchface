@@ -22,9 +22,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,6 +37,14 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 import android.widget.TextView;
+
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.WearableListenerService;
 
 import java.lang.ref.WeakReference;
 import java.util.TimeZone;
@@ -101,6 +111,8 @@ public class GlanceFace extends CanvasWatchFaceService {
         public void onCreate(SurfaceHolder holder) {
             super.onCreate(holder);
 
+            Log.v("myTag", "hello!!!!");
+
             setWatchFaceStyle(new WatchFaceStyle.Builder(GlanceFace.this)
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_SHORT)
                     .setAmbientPeekMode(WatchFaceStyle.AMBIENT_PEEK_MODE_HIDDEN)
@@ -111,7 +123,7 @@ public class GlanceFace extends CanvasWatchFaceService {
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
 
             mBackgroundPaint = new Paint();
-            mBackgroundPaint.setColor(resources.getColor(R.color.digital_background));
+            mBackgroundPaint.setColor(Color.parseColor("#44000000"));
 
             mTextPaint = new Paint();
             mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
@@ -178,14 +190,6 @@ public class GlanceFace extends CanvasWatchFaceService {
         @Override
         public void onApplyWindowInsets(WindowInsets insets) {
             super.onApplyWindowInsets(insets);
-
-            // Load resources that have alternate values for round watches.
-            Resources resources = GlanceFace.this.getResources();
-            boolean isRound = insets.isRound();
-            float textSize = resources.getDimension(isRound
-                    ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
-
-            mTextPaint.setTextSize(textSize);
         }
 
         @Override
@@ -219,25 +223,73 @@ public class GlanceFace extends CanvasWatchFaceService {
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
             // Draw the background.
+            Drawable background = getResources().getDrawable(R.drawable.winter_forest);
+            background.setBounds(-20, 0, 320 + 20, 290);
+            background.draw(canvas);
             canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
+
+            /* // Mockup:
+            Drawable d = getResources().getDrawable(R.drawable.watchface_mockup);
+            d.setBounds(0, 0, 320, 290);
+            d.draw(canvas);
+            */
 
             // Paint main clock:
             mTime.setToNow();
-            mTextPaint.setTextSize(80);
+            mTextPaint.setTextSize(90);
             String text = String.format("%d:%02d", mTime.hour % 12, mTime.minute);
-            canvas.drawText(text, canvas.getWidth() / 2, mYOffset, mTextPaint);
+            canvas.drawText(text, canvas.getWidth() / 2, 190, mTextPaint);
 
-            // canvas.drawOval(20, 160, 60, 220, mTextPaint);
             Paint smallPaint = new Paint();
-            smallPaint.setColor(mTextPaint.getColor());
-            smallPaint.setTextSize(20);
+            smallPaint.setAntiAlias(true);
+            smallPaint.setColor(Color.parseColor("#ff707070"));
+            smallPaint.setTextSize(30);
             smallPaint.setTextAlign(Paint.Align.CENTER);
+            smallPaint.setShadowLayer(2, 1, 1, Color.parseColor("#88000000"));
 
-            // canvas.drawText("Textra: " + textraCount, canvas.getWidth() / 2, mYOffset + 20, smallPaint);
-            canvas.drawText("Textra: " + textraCount, canvas.getWidth() / 2, mYOffset + 50, smallPaint);
-            canvas.drawText("Messenger: " + messengerCount, canvas.getWidth() / 2, mYOffset + 70, smallPaint);
-            canvas.drawText("Snapchat: " + snapchatCount, canvas.getWidth() / 2, mYOffset + 90, smallPaint);
-            canvas.drawText("Gmail: " + emailCount, canvas.getWidth() / 2, mYOffset + 110, smallPaint);
+            Drawable textra = getResources().getDrawable(R.drawable.textra);
+            textra.setBounds(57, 46, 57 + 53, 46 + 53);
+            if (textraCount == 0) {
+                textra.setAlpha(85);
+                textra.draw(canvas);
+            } else {
+                textra.setAlpha(220);
+                textra.draw(canvas);
+                canvas.drawText(textraCount + "", 83, 76, smallPaint);
+            }
+
+            Drawable messenger = getResources().getDrawable(R.drawable.messenger);
+            messenger.setBounds(210, 46, 210 + 53, 46 + 53);
+            if (messengerCount == 0) {
+                messenger.setAlpha(85);
+                messenger.draw(canvas);
+            } else {
+                messenger.setAlpha(220);
+                messenger.draw(canvas);
+                canvas.drawText(messengerCount + "", 236, 76, smallPaint);
+            }
+
+            Drawable snapchat = getResources().getDrawable(R.drawable.snapchat);
+            snapchat.setBounds(57, 222, 57 + 53, 222 + 53);
+            if (snapchatCount == 0) {
+                snapchat.setAlpha(85);
+                snapchat.draw(canvas);
+            } else {
+                snapchat.setAlpha(220);
+                snapchat.draw(canvas);
+                canvas.drawText(snapchatCount + "", 83, 256, smallPaint);
+            }
+
+            Drawable mail = getResources().getDrawable(R.drawable.mail);
+            mail.setBounds(210, 222, 210 + 53, 222 + 53);
+            if (emailCount == 0) {
+                mail.setAlpha(85);
+                mail.draw(canvas);
+            } else {
+                mail.setAlpha(220);
+                mail.draw(canvas);
+                canvas.drawText(emailCount + "", 236, 256, smallPaint);
+            }
         }
 
         /**
@@ -269,6 +321,35 @@ public class GlanceFace extends CanvasWatchFaceService {
                 long delayMs = INTERACTIVE_UPDATE_RATE_MS
                         - (timeMs % INTERACTIVE_UPDATE_RATE_MS);
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
+            }
+        }
+
+        public class ListenerService extends WearableListenerService {
+            public ListenerService() {
+                super();
+            }
+
+            @Override
+            public void onDataChanged(DataEventBuffer dataEvents) {
+                Log.v("myTag", "Change Received!!!!!");
+
+                DataMap dataMap;
+                for (DataEvent event : dataEvents) {
+
+                    // Check the data type
+                    if (event.getType() == DataEvent.TYPE_CHANGED) {
+                        // Check the data path
+                        String path = event.getDataItem().getUri().getPath();
+                        if (path.equals("/notifs")) {
+                            dataMap = DataMapItem.fromDataItem(event.getDataItem()).getDataMap();
+                            textraCount = dataMap.getInt("textra");
+                            messengerCount = dataMap.getInt("messenger");
+                            snapchatCount = dataMap.getInt("snapchat");
+                            emailCount = dataMap.getInt("email");
+                            invalidate();
+                        }
+                    }
+                }
             }
         }
     }

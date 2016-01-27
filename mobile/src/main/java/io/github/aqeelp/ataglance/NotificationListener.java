@@ -1,21 +1,11 @@
 package io.github.aqeelp.ataglance;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.DataApi;
-import com.google.android.gms.wearable.DataEventBuffer;
-import com.google.android.gms.wearable.PutDataRequest;
-import com.google.android.gms.wearable.Wearable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by aqeelp on 1/23/16.
@@ -139,7 +129,6 @@ public class NotificationListener extends NotificationListenerService {
         this.messageIds = new ArrayList<>();
     }
 
-    // TODO: right procedure, but this info should be broadcasted on every update
     private Bundle currentNotifications() {
         Bundle notifs = new Bundle();
 
