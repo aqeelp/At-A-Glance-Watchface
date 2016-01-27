@@ -14,7 +14,7 @@ import com.google.android.gms.wearable.WearableListenerService;
 public class ListenerService extends WearableListenerService {
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
-        Log.v("myTag", "Change Received!!!!!");
+        Log.v("myTag", "Data update Received!!!!!");
 
         DataMap dataMap;
         for (DataEvent event : dataEvents) {

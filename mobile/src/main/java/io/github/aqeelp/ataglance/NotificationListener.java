@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * Created by aqeelp on 1/23/16.
  */
 public class NotificationListener extends NotificationListenerService {
-    private String TAG = "NotificationListener";
+    private final String TAG = "myTag";
 
     ArrayList<String> textIds = new ArrayList<>();
     ArrayList<String> messageIds = new ArrayList<>();

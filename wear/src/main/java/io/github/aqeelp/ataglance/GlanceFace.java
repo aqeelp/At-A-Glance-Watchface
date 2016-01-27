@@ -36,15 +36,8 @@ import android.text.format.Time;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
-import android.widget.TextView;
 
-import com.google.android.gms.wearable.DataApi;
-import com.google.android.gms.wearable.DataEvent;
-import com.google.android.gms.wearable.DataEventBuffer;
-import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
-import com.google.android.gms.wearable.DataMapItem;
-import com.google.android.gms.wearable.WearableListenerService;
 
 import java.lang.ref.WeakReference;
 import java.util.TimeZone;
@@ -123,7 +116,7 @@ public class GlanceFace extends CanvasWatchFaceService {
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
 
             mBackgroundPaint = new Paint();
-            mBackgroundPaint.setColor(Color.parseColor("#44000000"));
+            mBackgroundPaint.setColor(Color.parseColor("#55000000"));
 
             mTextPaint = new Paint();
             mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
@@ -226,6 +219,7 @@ public class GlanceFace extends CanvasWatchFaceService {
             Drawable background = getResources().getDrawable(R.drawable.winter_forest);
             background.setBounds(-20, 0, 320 + 20, 290);
             background.draw(canvas);
+            // Darken the background:
             canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
 
             /* // Mockup:
