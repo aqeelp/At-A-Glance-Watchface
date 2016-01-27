@@ -12,10 +12,6 @@ import com.google.android.gms.wearable.WearableListenerService;
  * Created by aqeelp on 1/26/16.
  */
 public class ListenerService extends WearableListenerService {
-    public ListenerService() {
-        super();
-    }
-
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
         Log.v("myTag", "Change Received!!!!!");
