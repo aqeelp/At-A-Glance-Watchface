@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -44,6 +45,16 @@ public class MainActivity extends AppCompatActivity implements
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
                 .build();
+
+        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DataMap dataMap = new DataMap();
+                dataMap.putInt("testing", 1);
+
+                new SendToDataLayerThread("/test", dataMap).start();
+            }
+        });
     }
 
     @Override

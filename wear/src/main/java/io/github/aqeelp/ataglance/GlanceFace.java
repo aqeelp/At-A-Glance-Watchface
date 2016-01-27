@@ -60,7 +60,7 @@ public class GlanceFace extends CanvasWatchFaceService {
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
 
-    private int textraCount, messengerCount, snapchatCount, emailCount;
+    private static int textraCount, messengerCount, snapchatCount, emailCount;
 
     /**
      * Update rate in milliseconds for interactive mode. We update once a second since seconds are
@@ -323,35 +323,6 @@ public class GlanceFace extends CanvasWatchFaceService {
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
             }
         }
-
-        public class ListenerService extends WearableListenerService {
-            public ListenerService() {
-                super();
-            }
-
-            @Override
-            public void onDataChanged(DataEventBuffer dataEvents) {
-                Log.v("myTag", "Change Received!!!!!");
-
-                DataMap dataMap;
-                for (DataEvent event : dataEvents) {
-
-                    // Check the data type
-                    if (event.getType() == DataEvent.TYPE_CHANGED) {
-                        // Check the data path
-                        String path = event.getDataItem().getUri().getPath();
-                        if (path.equals("/notifs")) {
-                            dataMap = DataMapItem.fromDataItem(event.getDataItem()).getDataMap();
-                            textraCount = dataMap.getInt("textra");
-                            messengerCount = dataMap.getInt("messenger");
-                            snapchatCount = dataMap.getInt("snapchat");
-                            emailCount = dataMap.getInt("email");
-                            invalidate();
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private static class EngineHandler extends Handler {
@@ -372,5 +343,13 @@ public class GlanceFace extends CanvasWatchFaceService {
                 }
             }
         }
+    }
+
+    public static void parseNotifPackage(DataMap dataMap) {
+        textraCount = dataMap.getInt("textra");
+        messengerCount = dataMap.getInt("messenger");
+        snapchatCount = dataMap.getInt("snapchat");
+        emailCount = dataMap.getInt("email");
+        // invalidate();
     }
 }
