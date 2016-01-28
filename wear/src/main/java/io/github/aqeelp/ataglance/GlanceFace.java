@@ -346,7 +346,7 @@ public class GlanceFace extends CanvasWatchFaceService {
     }
 
     public static void parseNotifPackage(DataMap dataMap) {
-        Log.d(TAG, "Notification package received...parsing.");
+        Log.d(TAG, "Notification package received... " + dataMap);
 
         textraCount = dataMap.getInt("textra");
         messengerCount = dataMap.getInt("messenger");

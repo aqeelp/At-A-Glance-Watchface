@@ -184,10 +184,10 @@ public class NotificationListener extends NotificationListenerService implements
         DataMap notifs = new DataMap();
         //Bundle notifs = new Bundle();
 
-        notifs.putInt("Textra", this.textIds.size());
-        notifs.putInt("Messenger", this.messageIds.size());
-        notifs.putInt("Snapchat", this.snaps);
-        notifs.putInt("Emails", this.gmails);
+        notifs.putInt("textra", this.textIds.size());
+        notifs.putInt("messenger", this.messageIds.size());
+        notifs.putInt("snapchat", this.snaps);
+        notifs.putInt("emails", this.gmails);
 
         return notifs;
     }
