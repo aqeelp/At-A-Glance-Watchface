@@ -12,8 +12,7 @@ import com.google.android.gms.wearable.WearableListenerService;
 /**
  * Created by aqeelp on 1/26/16.
  */
-public class ListenerService extends WearableListenerService
-        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class ListenerService extends WearableListenerService {
     private static final String TAG = "myTag";
     private static final String PATH = "/glance/notifs";
 
@@ -21,7 +20,7 @@ public class ListenerService extends WearableListenerService
     public void onMessageReceived(MessageEvent messageEvent) {
         Log.d(TAG, "Message received!");
 
-        if (!messageEvent.getPath().equals(PATH)) {
+        if (!messageEvent.getPath().equalsIgnoreCase(PATH)) {
             return;
         }
 
@@ -29,26 +28,5 @@ public class ListenerService extends WearableListenerService
         DataMap dataMap = DataMap.fromByteArray(rawData);
 
         GlanceFace.parseNotifPackage(dataMap);
-    }
-
-    @Override // GoogleApiClient.ConnectionCallbacks
-    public void onConnected(Bundle connectionHint) {
-        if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "onConnected: " + connectionHint);
-        }
-    }
-
-    @Override  // GoogleApiClient.ConnectionCallbacks
-    public void onConnectionSuspended(int cause) {
-        if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "onConnectionSuspended: " + cause);
-        }
-    }
-
-    @Override  // GoogleApiClient.OnConnectionFailedListener
-    public void onConnectionFailed(ConnectionResult result) {
-        if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "onConnectionFailed: " + result);
-        }
     }
 }

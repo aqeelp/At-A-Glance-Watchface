@@ -12,23 +12,24 @@ import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 public class MainActivity extends AppCompatActivity implements
-        ResultCallback<DataApi.DataItemResult>,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.ConnectionCallbacks {
 
     private static final String TAG = "myTag";
     private static final String PATH = "/glance/notifs";
 
     private NotificationReceiver receiver;
-    private String peerId;
     private GoogleApiClient mGoogleApiClient;
 
     @Override
@@ -44,12 +45,11 @@ public class MainActivity extends AppCompatActivity implements
         filter.addAction("io.github.aqeelp.UPDATE_NOTIFICATIONS");
         registerReceiver(receiver, filter);
 
-        peerId = getIntent().getStringExtra("android.support.wearable.watchface.extra.PEER_ID");
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
                 .build();
+        mGoogleApiClient.connect();
 
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,15 +90,15 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mGoogleApiClient.disconnect();
+    }
+
+    @Override
     public void onConnected(Bundle bundle) {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, "onConnected: " + bundle);
-        }
-
-        if (peerId != null) {
-            Uri.Builder builder = new Uri.Builder();
-            Uri uri = builder.scheme("wear").path(PATH).authority(peerId).build();
-            Wearable.DataApi.getDataItem(mGoogleApiClient, uri).setResultCallback(this);
         }
     }
 
@@ -114,28 +114,6 @@ public class MainActivity extends AppCompatActivity implements
         super.onPause();
         // Wearable.DataApi.removeListener(mGoogleApiClient, this);
         // mGoogleApiClient.disconnect();
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "onConnectionFailed: " + connectionResult);
-        }
-    }
-
-    @Override
-    public void onResult(DataApi.DataItemResult dataItemResult) {
-        if (dataItemResult.getStatus().isSuccess() && dataItemResult.getDataItem() != null) {
-            DataItem configDataItem = dataItemResult.getDataItem();
-            DataMapItem dataMapItem = DataMapItem.fromDataItem(configDataItem);
-            DataMap config = dataMapItem.getDataMap();
-            Log.d(TAG, "Data received:onResult - " + config);
-        } else {
-            // If DataItem with the current config can't be retrieved, select the default items on
-            // each picker.
-            // setUpAllPickers(null);
-            Log.d(TAG, "Data received:onResult - " + dataItemResult);
-        }
     }
 
     private class NotificationReceiver extends BroadcastReceiver {
@@ -156,13 +134,17 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void sendConfigUpdateMessage(DataMap dataMap) {
-        if (peerId != null) {
-            byte[] rawData = dataMap.toByteArray();
-            Wearable.MessageApi.sendMessage(mGoogleApiClient, peerId, PATH, rawData);
+        final byte[] rawData = dataMap.toByteArray();
 
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "Sent watch face: " + dataMap);
+        new Thread( new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes( mGoogleApiClient ).await();
+                for(Node node : nodes.getNodes()) {
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            mGoogleApiClient, node.getId(), PATH, rawData).await();
+                }
             }
-        }
+        }).start();
     }
 }
