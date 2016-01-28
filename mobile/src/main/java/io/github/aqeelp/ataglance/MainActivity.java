@@ -4,20 +4,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.Result;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.DataApi;
-import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
-import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
@@ -36,6 +29,14 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.d(TAG, "Starting up Notification Listener service...");
+        Intent notificationServiceStarter = new Intent(this, NotificationListener.class);
+        startService(notificationServiceStarter);
+
+        // finish();
+
+        /*setContentView(R.layout.activity_main);
 
         Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
         startActivity(intent);
@@ -64,21 +65,24 @@ public class MainActivity extends AppCompatActivity implements
 
                 sendConfigUpdateMessage(dataMap);
             }
-        });
+        });*/
     }
 
     // Connect to the data layer when the Activity starts
     @Override
     protected void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
-        Log.d(TAG, "Connection started");
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
+            Log.d(TAG, "Connection started");
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mGoogleApiClient.connect();
+        if (mGoogleApiClient != null)
+            mGoogleApiClient.connect();
     }
 
     @Override
@@ -92,7 +96,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mGoogleApiClient.disconnect();
+        if (mGoogleApiClient != null)
+            mGoogleApiClient.disconnect();
     }
 
     @Override
