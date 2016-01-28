@@ -43,10 +43,6 @@ public class NotificationListener extends NotificationListenerService implements
         super.onCreate();
         Log.d(TAG, "Notification Listener service created.");
 
-        /*Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);*/
-
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
@@ -66,11 +62,11 @@ public class NotificationListener extends NotificationListenerService implements
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
 
-        Log.i(TAG, "Notification posted:");
+        /*Log.i(TAG, "Notification posted:");
         Log.i(TAG, "ID: " + sbn.getId());
         Log.i(TAG, "Package name: " + sbn.getPackageName());
         Log.i(TAG, "Notification text: " + sbn.getNotification().tickerText);
-        Log.i(TAG, " ");
+        Log.i(TAG, " ");*/
 
         if (this.textIds == null) init();
 
@@ -174,10 +170,11 @@ public class NotificationListener extends NotificationListenerService implements
     private void init() {
         this.snaps = 0;
         this.gmails = 0;
-        this.textIds = new ArrayList<>();
-        this.messageIds = new ArrayList<>();
+        this.textIds = new ArrayList<>(0);
+        this.messageIds = new ArrayList<>(0);
 
-        // TODO: Broadcast initial values, or
+        // TODO: Broadcast initial values, or interpret current notifs?
+        sendMessage(currentNotifications());
     }
 
     private DataMap currentNotifications() {

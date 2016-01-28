@@ -352,6 +352,5 @@ public class GlanceFace extends CanvasWatchFaceService {
         messengerCount = dataMap.getInt("messenger");
         snapchatCount = dataMap.getInt("snapchat");
         emailCount = dataMap.getInt("email");
-        // invalidate();
     }
 }
