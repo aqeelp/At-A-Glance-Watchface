@@ -31,6 +31,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.wearable.watchface.CanvasWatchFaceService;
+import android.support.wearable.watchface.WatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.util.Log;
@@ -115,6 +116,7 @@ public class GlanceFace extends CanvasWatchFaceService {
                     .setAmbientPeekMode(WatchFaceStyle.AMBIENT_PEEK_MODE_HIDDEN)
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_PERSISTENT)
                     .setShowSystemUiTime(false)
+                    .setAcceptsTapEvents(true)
                     .build());
             Resources resources = GlanceFace.this.getResources();
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
