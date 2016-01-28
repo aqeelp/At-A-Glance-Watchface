@@ -259,7 +259,7 @@ public class GlanceFace extends CanvasWatchFaceService {
             }
 
             Drawable messenger = getResources().getDrawable(R.drawable.messenger);
-            messenger.setBounds(210, 46, 210 + 53, 46 + 53);
+            messenger.setBounds(210, 42, 210 + 53, 42 + 53);
             if (messengerCount == 0) {
                 messenger.setAlpha(85);
                 messenger.draw(canvas);
@@ -351,6 +351,6 @@ public class GlanceFace extends CanvasWatchFaceService {
         textraCount = dataMap.getInt("textra");
         messengerCount = dataMap.getInt("messenger");
         snapchatCount = dataMap.getInt("snapchat");
-        emailCount = dataMap.getInt("email");
+        emailCount = dataMap.getInt("emails");
     }
 }
