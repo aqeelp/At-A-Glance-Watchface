@@ -30,16 +30,16 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+        startActivity(intent);
+
         Log.d(TAG, "Starting up Notification Listener service...");
         Intent notificationServiceStarter = new Intent(this, NotificationListener.class);
         startService(notificationServiceStarter);
 
-        // finish();
+        finish();
 
-        /*setContentView(R.layout.activity_main);
 
-        Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-        startActivity(intent);
 
         receiver = new NotificationReceiver();
         IntentFilter filter = new IntentFilter();
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 sendConfigUpdateMessage(dataMap);
             }
-        });*/
+        });
     }
 
     // Connect to the data layer when the Activity starts

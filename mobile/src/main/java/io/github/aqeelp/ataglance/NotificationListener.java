@@ -7,6 +7,8 @@ import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Result;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
@@ -31,23 +33,27 @@ public class NotificationListener extends NotificationListenerService implements
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "Notification Listener service started - making STICKY.");
+
         return START_STICKY;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "Notification Listener service started handheld device.");
+        Log.d(TAG, "Notification Listener service created.");
 
-        Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+        /*Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        startActivity(intent);*/
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
                 .build();
         mGoogleApiClient.connect();
+
+        this.init();
     }
 
     @Override
@@ -131,9 +137,9 @@ public class NotificationListener extends NotificationListenerService implements
         if (name.equals("com.snapchat.android")) this.removeSnapchat(sbn);
         if (name.equals("com.google.android.gm")) this.removeGmail(sbn);
 
-        /* Intent i = new Intent("io.github.aqeelp.UPDATE_NOTIFICATIONS");
+        /*Intent i = new Intent("io.github.aqeelp.UPDATE_NOTIFICATIONS");
         i.putExtra("notifs", currentNotifications());
-        sendBroadcast(i); */
+        sendBroadcast(i);*/
 
         sendMessage(currentNotifications());
     }
@@ -170,10 +176,13 @@ public class NotificationListener extends NotificationListenerService implements
         this.gmails = 0;
         this.textIds = new ArrayList<>();
         this.messageIds = new ArrayList<>();
+
+        // TODO: Broadcast initial values, or
     }
 
     private DataMap currentNotifications() {
         DataMap notifs = new DataMap();
+        //Bundle notifs = new Bundle();
 
         notifs.putInt("Textra", this.textIds.size());
         notifs.putInt("Messenger", this.messageIds.size());
@@ -184,6 +193,7 @@ public class NotificationListener extends NotificationListenerService implements
     }
 
     private void sendMessage(DataMap dataMap) {
+        Log.d(TAG, "Attempting to send notification update... " + dataMap);
         final byte[] rawData = dataMap.toByteArray();
 
         new Thread( new Runnable() {
@@ -193,6 +203,10 @@ public class NotificationListener extends NotificationListenerService implements
                 for(Node node : nodes.getNodes()) {
                     MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
                             mGoogleApiClient, node.getId(), PATH, rawData).await();
+                    if (result.getStatus().isSuccess())
+                        Log.d(TAG, "Message sent successfully");
+                    else
+                        Log.d(TAG, "Message failed");
                 }
             }
         }).start();
