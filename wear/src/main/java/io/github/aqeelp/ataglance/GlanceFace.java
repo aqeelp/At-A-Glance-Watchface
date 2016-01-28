@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
  * low-bit ambient mode, the text is drawn without anti-aliasing in ambient mode.
  */
 public class GlanceFace extends CanvasWatchFaceService {
-    private String TAG = "GlanceFace";
+    private final static String TAG = "myTag";
 
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
@@ -104,7 +104,7 @@ public class GlanceFace extends CanvasWatchFaceService {
         public void onCreate(SurfaceHolder holder) {
             super.onCreate(holder);
 
-            Log.v("myTag", "hello!!!!");
+            Log.v(TAG, "hello!!!!");
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(GlanceFace.this)
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_SHORT)
@@ -231,7 +231,9 @@ public class GlanceFace extends CanvasWatchFaceService {
             // Paint main clock:
             mTime.setToNow();
             mTextPaint.setTextSize(90);
-            String text = String.format("%d:%02d", mTime.hour % 12, mTime.minute);
+            int hour = mTime.hour % 12;
+            if (hour == 0) hour = 12;
+            String text = String.format("%d:%02d", hour, mTime.minute);
             canvas.drawText(text, canvas.getWidth() / 2, 190, mTextPaint);
 
             Paint smallPaint = new Paint();
@@ -340,6 +342,8 @@ public class GlanceFace extends CanvasWatchFaceService {
     }
 
     public static void parseNotifPackage(DataMap dataMap) {
+        Log.d(TAG, "Notification package received...parsing.");
+
         textraCount = dataMap.getInt("textra");
         messengerCount = dataMap.getInt("messenger");
         snapchatCount = dataMap.getInt("snapchat");

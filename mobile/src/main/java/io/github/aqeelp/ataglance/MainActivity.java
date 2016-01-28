@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "myTag";
-    private static final String PATH = "/watch_face/notifs";
+    private static final String PATH = "/glance/notifs";
 
     private NotificationReceiver receiver;
     private String peerId;
@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
+        Log.d(TAG, "Connection started");
     }
 
     @Override
