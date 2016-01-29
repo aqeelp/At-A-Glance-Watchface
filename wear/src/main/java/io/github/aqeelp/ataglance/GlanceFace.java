@@ -45,6 +45,7 @@ import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
 
 import java.lang.ref.WeakReference;
+import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -66,6 +67,12 @@ public class GlanceFace extends CanvasWatchFaceService {
      */
     private static final long INTERACTIVE_UPDATE_RATE_MS = TimeUnit.SECONDS.toMillis(1);
 
+    private static final String[] week_days = {"Sun", "Mon", "Tues", "Wed", "Thurs", "Fri",
+        "Sat"};
+
+    private static final String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
+        "Aug", "Sep", "Oct", "Nov", "Dec"};
+
     /**
      * Handler message id for updating the time periodically in interactive mode.
      */
@@ -82,8 +89,7 @@ public class GlanceFace extends CanvasWatchFaceService {
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                mTime.clear(intent.getStringExtra("time-zone"));
-                mTime.setToNow();
+                mTime.setTimeZone(TimeZone.getDefault());
             }
         };
 
@@ -94,7 +100,7 @@ public class GlanceFace extends CanvasWatchFaceService {
 
         boolean mAmbient;
 
-        Time mTime;
+        Calendar mTime;
 
         float mXOffset;
         float mYOffset;
@@ -109,7 +115,7 @@ public class GlanceFace extends CanvasWatchFaceService {
         public void onCreate(SurfaceHolder holder) {
             super.onCreate(holder);
 
-            Log.v(TAG, "hello!!!!");
+            Log.v(TAG, "Glance Watchface started!");
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(GlanceFace.this)
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_SHORT)
@@ -128,7 +134,7 @@ public class GlanceFace extends CanvasWatchFaceService {
             mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
             mTextPaint.setTextAlign(Paint.Align.CENTER);
 
-            mTime = new Time();
+            mTime = Calendar.getInstance();
 
             textraCount = 0;
             messengerCount = 0;
@@ -158,8 +164,8 @@ public class GlanceFace extends CanvasWatchFaceService {
                 registerReceiver();
 
                 // Update time zone in case it changed while we weren't visible.
-                mTime.clear(TimeZone.getDefault().getID());
-                mTime.setToNow();
+                mTime.setTimeZone(TimeZone.getDefault());
+                invalidate();
             } else {
                 unregisterReceiver();
             }
@@ -235,12 +241,22 @@ public class GlanceFace extends CanvasWatchFaceService {
             */
 
             // Paint main clock:
-            mTime.setToNow();
+            long now = System.currentTimeMillis();
+            mTime.setTimeInMillis(now);
+
             mTextPaint.setTextSize(90);
-            int hour = mTime.hour % 12;
+            int hour = mTime.get(Calendar.HOUR) % 12;
             if (hour == 0) hour = 12;
-            String text = String.format("%d:%02d", hour, mTime.minute);
+            String text = String.format("%d:%02d", hour, mTime.get(Calendar.MINUTE));
             canvas.drawText(text, canvas.getWidth() / 2, 190, mTextPaint);
+
+            // Paint date:
+            mTextPaint.setTextSize(20);
+            String day = week_days[mTime.get(Calendar.DAY_OF_WEEK) - 1];
+            String month = months[mTime.get(Calendar.MONTH)];
+            String date = day + ", " + month + " " + mTime.get(Calendar.DAY_OF_MONTH);
+            canvas.drawText(date, canvas.getWidth() / 2, 118, mTextPaint);
+
 
             Paint smallPaint = new Paint();
             smallPaint.setAntiAlias(true);
