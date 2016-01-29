@@ -233,7 +233,7 @@ public class GlanceFace extends CanvasWatchFaceService {
 
                 if (mAmbient) {
                     mTextPaint.setAlpha(190);
-                    mSmallPaint.setColor(Color.parseColor("#ddffffff"));
+                    mSmallPaint.setColor(Color.parseColor("#ff000000"));
                     mSmallPaint.clearShadowLayer();
                 } else {
                     mTextPaint.setAlpha(255);
