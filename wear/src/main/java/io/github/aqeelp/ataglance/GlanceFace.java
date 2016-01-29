@@ -97,6 +97,8 @@ public class GlanceFace extends CanvasWatchFaceService {
 
         Paint mBackgroundPaint;
         Paint mTextPaint;
+        Paint mTintPaint;
+        Paint mSmallPaint;
 
         boolean mAmbient;
 
@@ -128,11 +130,21 @@ public class GlanceFace extends CanvasWatchFaceService {
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
 
             mBackgroundPaint = new Paint();
-            mBackgroundPaint.setColor(Color.parseColor("#55000000"));
+            mBackgroundPaint.setColor(Color.parseColor("#ff000000"));
+
+            mTintPaint = new Paint();
+            mTintPaint.setColor(Color.parseColor("#55000000"));
 
             mTextPaint = new Paint();
             mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
             mTextPaint.setTextAlign(Paint.Align.CENTER);
+
+            mSmallPaint = new Paint();
+            mSmallPaint.setAntiAlias(true);
+            mSmallPaint.setColor(Color.parseColor("#ff707070"));
+            mSmallPaint.setTextSize(30);
+            mSmallPaint.setTextAlign(Paint.Align.CENTER);
+            mSmallPaint.setShadowLayer(2, 1, 1, Color.parseColor("#88000000"));
 
             mTime = Calendar.getInstance();
 
@@ -216,6 +228,17 @@ public class GlanceFace extends CanvasWatchFaceService {
                 mAmbient = inAmbientMode;
                 if (mLowBitAmbient) {
                     mTextPaint.setAntiAlias(!inAmbientMode);
+                    mSmallPaint.setAntiAlias(!inAmbientMode);
+                }
+
+                if (mAmbient) {
+                    mTextPaint.setAlpha(190);
+                    mSmallPaint.setColor(Color.parseColor("#ddffffff"));
+                    mSmallPaint.clearShadowLayer();
+                } else {
+                    mTextPaint.setAlpha(255);
+                    mSmallPaint.setColor(Color.parseColor("#ff707070"));
+                    mSmallPaint.setShadowLayer(2, 1, 1, Color.parseColor("#88000000"));
                 }
                 invalidate();
             }
@@ -228,11 +251,15 @@ public class GlanceFace extends CanvasWatchFaceService {
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
             // Draw the background.
-            Drawable background = getResources().getDrawable(R.drawable.winter_forest);
-            background.setBounds(-20, 0, 320 + 20, 290);
-            background.draw(canvas);
-            // Darken the background:
             canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
+
+            if (!mAmbient) {
+                Drawable background = getResources().getDrawable(R.drawable.winter_forest);
+                background.setBounds(-20, 0, 320 + 20, 290);
+                background.draw(canvas);
+                // Darken the background:
+                canvas.drawRect(0, 0, bounds.width(), bounds.height(), mTintPaint);
+            }
 
             /* // Mockup:
             Drawable d = getResources().getDrawable(R.drawable.watchface_mockup);
@@ -251,21 +278,15 @@ public class GlanceFace extends CanvasWatchFaceService {
             canvas.drawText(text, canvas.getWidth() / 2, 190, mTextPaint);
 
             // Paint date:
-            mTextPaint.setTextSize(20);
-            String day = week_days[mTime.get(Calendar.DAY_OF_WEEK) - 1];
-            String month = months[mTime.get(Calendar.MONTH)];
-            String date = day + ", " + month + " " + mTime.get(Calendar.DAY_OF_MONTH);
-            canvas.drawText(date, canvas.getWidth() / 2, 118, mTextPaint);
+            if (!mAmbient) {
+                mTextPaint.setTextSize(20);
+                String day = week_days[mTime.get(Calendar.DAY_OF_WEEK) - 1];
+                String month = months[mTime.get(Calendar.MONTH)];
+                String date = day + ", " + month + " " + mTime.get(Calendar.DAY_OF_MONTH);
+                canvas.drawText(date, canvas.getWidth() / 2, 118, mTextPaint);
+            }
 
-
-            Paint smallPaint = new Paint();
-            smallPaint.setAntiAlias(true);
-            smallPaint.setColor(Color.parseColor("#ff707070"));
-            smallPaint.setTextSize(30);
-            smallPaint.setTextAlign(Paint.Align.CENTER);
-            smallPaint.setShadowLayer(2, 1, 1, Color.parseColor("#88000000"));
-
-            Drawable textra = getResources().getDrawable(R.drawable.textra);
+            /*Drawable textra = getResources().getDrawable(R.drawable.textra);
             textra.setBounds(57, 46, 57 + 53, 46 + 53);
             if (textraCount == 0) {
                 textra.setAlpha(85);
@@ -273,40 +294,33 @@ public class GlanceFace extends CanvasWatchFaceService {
             } else {
                 textra.setAlpha(220);
                 textra.draw(canvas);
-                canvas.drawText(textraCount + "", 83, 76, smallPaint);
-            }
+                canvas.drawText(textraCount + "", 83, 76, mSmallPaint);
+            }*/
 
-            Drawable messenger = getResources().getDrawable(R.drawable.messenger);
-            messenger.setBounds(210, 42, 210 + 53, 42 + 53);
-            if (messengerCount == 0) {
-                messenger.setAlpha(85);
-                messenger.draw(canvas);
-            } else {
-                messenger.setAlpha(220);
-                messenger.draw(canvas);
-                canvas.drawText(messengerCount + "", 236, 76, smallPaint);
-            }
+            drawIcon(textraCount, getResources().getDrawable(R.drawable.textra), 57, 46, canvas, bounds);
+            drawIcon(messengerCount, getResources().getDrawable(R.drawable.messenger), 210, 42, canvas, bounds);
+            drawIcon(snapchatCount, getResources().getDrawable(R.drawable.snapchat), 57, 222, canvas, bounds);
+            drawIcon(emailCount, getResources().getDrawable(R.drawable.mail), 210, 222, canvas, bounds);
+        }
 
-            Drawable snapchat = getResources().getDrawable(R.drawable.snapchat);
-            snapchat.setBounds(57, 222, 57 + 53, 222 + 53);
-            if (snapchatCount == 0) {
-                snapchat.setAlpha(85);
-                snapchat.draw(canvas);
-            } else {
-                snapchat.setAlpha(220);
-                snapchat.draw(canvas);
-                canvas.drawText(snapchatCount + "", 83, 256, smallPaint);
-            }
+        private void drawIcon(int count, Drawable icon, int x, int y, Canvas canvas, Rect bounds) {
+            final int ICON_SIZE = 53;
+            int transparencyBuffer = 0;
+            if (mAmbient) transparencyBuffer = 85;
 
-            Drawable mail = getResources().getDrawable(R.drawable.mail);
-            mail.setBounds(210, 222, 210 + 53, 222 + 53);
-            if (emailCount == 0) {
-                mail.setAlpha(85);
-                mail.draw(canvas);
+            icon.setBounds(x, y, x + ICON_SIZE, y + ICON_SIZE);
+            if (count == 0) {
+                icon.setAlpha(85 - transparencyBuffer);
+                icon.draw(canvas);
             } else {
-                mail.setAlpha(220);
-                mail.draw(canvas);
-                canvas.drawText(emailCount + "", 236, 256, smallPaint);
+                icon.setAlpha(220 - transparencyBuffer);
+                icon.draw(canvas);
+
+                int text_x = 83;
+                if (x > bounds.exactCenterX()) text_x = 236;
+                int text_y = 76;
+                if (y > bounds.exactCenterY()) text_y = 256;
+                canvas.drawText(count + "", text_x, text_y, mSmallPaint);
             }
         }
 
