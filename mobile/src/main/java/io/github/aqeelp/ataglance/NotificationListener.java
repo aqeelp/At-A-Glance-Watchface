@@ -77,10 +77,6 @@ public class NotificationListener extends NotificationListenerService implements
         if (name.equals("com.snapchat.android")) this.addSnapchat(sbn);
         if (name.equals("com.google.android.gm")) this.addGmail(sbn);
 
-        /*Intent i = new Intent("io.github.aqeelp.UPDATE_NOTIFICATIONS");
-        i.putExtra("notifs", currentNotifications());
-        sendBroadcast(i);*/
-
         sendMessage(currentNotifications());
     }
 
@@ -133,10 +129,6 @@ public class NotificationListener extends NotificationListenerService implements
         if (name.equals("com.snapchat.android")) this.removeSnapchat(sbn);
         if (name.equals("com.google.android.gm")) this.removeGmail(sbn);
 
-        /*Intent i = new Intent("io.github.aqeelp.UPDATE_NOTIFICATIONS");
-        i.putExtra("notifs", currentNotifications());
-        sendBroadcast(i);*/
-
         sendMessage(currentNotifications());
     }
 
@@ -179,7 +171,6 @@ public class NotificationListener extends NotificationListenerService implements
 
     private DataMap currentNotifications() {
         DataMap notifs = new DataMap();
-        //Bundle notifs = new Bundle();
 
         notifs.putInt("textra", this.textIds.size());
         notifs.putInt("messenger", this.messageIds.size());

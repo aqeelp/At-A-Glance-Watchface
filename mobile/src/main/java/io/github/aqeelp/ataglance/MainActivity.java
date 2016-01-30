@@ -19,9 +19,6 @@ import com.google.android.gms.wearable.Wearable;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "myTag";
-    private static final String PATH = "/glance/notifs";
-
-    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Starting up Notification Listener service...");
         Intent notificationServiceStarter = new Intent(this, NotificationListener.class);
         startService(notificationServiceStarter);
+
+        Log.d(TAG, "Starting up mobile-side message receiver...");
+        Intent applicationLauncherStarter = new Intent(this, ApplicationLauncher.class);
+        startService(applicationLauncherStarter);
 
         finish();
     }

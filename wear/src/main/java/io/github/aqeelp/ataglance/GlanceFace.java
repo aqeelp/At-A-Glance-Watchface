@@ -30,6 +30,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
@@ -42,6 +43,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 import java.lang.ref.WeakReference;
@@ -53,8 +56,11 @@ import java.util.concurrent.TimeUnit;
  * Digital watch face with seconds. In ambient mode, the seconds aren't displayed. On devices with
  * low-bit ambient mode, the text is drawn without anti-aliasing in ambient mode.
  */
-public class GlanceFace extends CanvasWatchFaceService {
+public class GlanceFace extends CanvasWatchFaceService implements
+        GoogleApiClient.ConnectionCallbacks {
     private final static String TAG = "myTag";
+
+    private GoogleApiClient mGoogleApiClient;;
 
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
@@ -77,6 +83,17 @@ public class GlanceFace extends CanvasWatchFaceService {
      * Handler message id for updating the time periodically in interactive mode.
      */
     private static final int MSG_UPDATE_TIME = 0;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Wearable.API)
+                .addConnectionCallbacks(this)
+                .build();
+        mGoogleApiClient.connect();
+    }
 
     @Override
     public Engine onCreateEngine() {
@@ -257,6 +274,7 @@ public class GlanceFace extends CanvasWatchFaceService {
                 Drawable background = getResources().getDrawable(R.drawable.winter_forest);
                 background.setBounds(-20, 0, 320 + 20, 290);
                 background.draw(canvas);
+
                 // Darken the background:
                 canvas.drawRect(0, 0, bounds.width(), bounds.height(), mTintPaint);
             }
@@ -285,17 +303,6 @@ public class GlanceFace extends CanvasWatchFaceService {
                 String date = day + ", " + month + " " + mTime.get(Calendar.DAY_OF_MONTH);
                 canvas.drawText(date, canvas.getWidth() / 2, 118, mTextPaint);
             }
-
-            /*Drawable textra = getResources().getDrawable(R.drawable.textra);
-            textra.setBounds(57, 46, 57 + 53, 46 + 53);
-            if (textraCount == 0) {
-                textra.setAlpha(85);
-                textra.draw(canvas);
-            } else {
-                textra.setAlpha(220);
-                textra.draw(canvas);
-                canvas.drawText(textraCount + "", 83, 76, mSmallPaint);
-            }*/
 
             drawIcon(textraCount, getResources().getDrawable(R.drawable.textra), 57, 46, canvas, bounds);
             drawIcon(messengerCount, getResources().getDrawable(R.drawable.messenger), 210, 42, canvas, bounds);
@@ -355,6 +362,38 @@ public class GlanceFace extends CanvasWatchFaceService {
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
             }
         }
+
+        @Override
+        public void onTapCommand(
+                @TapType int tapType, int x, int y, long eventTime) {
+            switch (tapType) {
+                case WatchFaceService.TAP_TYPE_TAP:
+                    DataMap activity = null;
+                    if ((57 <= x || x >= 57 + 53) && (46 <= y || y >= 46 + 53)) {
+                        activity = new DataMap();
+                        if (textraCount > 0)
+                            activity.putString("package", "com.textra");
+                    } else if ((210 <= x || x >= 210 + 53) && (42 <= y || y >= 42 + 53)) {
+                        activity = new DataMap();
+                        if (messengerCount > 0)
+                            activity.putString("package", "com.facebook.orca");
+                    } else if ((57 <= x || x >= 57 + 53) && (222 <= y || y >= 222 + 53)) {
+                        activity = new DataMap();
+                        if (snapchatCount > 0)
+                            activity.putString("package", "com.snapchat.android");
+                    } else if ((210 <= x || x >= 210 + 53) && (222 <= y || y >= 222 + 53)) {
+                        activity = new DataMap();
+                        if (emailCount > 0)
+                            activity.putString("package", "com.google.android.gm");
+                    }
+                    if (activity != null) sendMessage(activity);
+                    break;
+
+                default:
+                    super.onTapCommand(tapType, x, y, eventTime);
+                    break;
+            }
+        }
     }
 
     private static class EngineHandler extends Handler {
@@ -384,5 +423,43 @@ public class GlanceFace extends CanvasWatchFaceService {
         messengerCount = dataMap.getInt("messenger");
         snapchatCount = dataMap.getInt("snapchat");
         emailCount = dataMap.getInt("emails");
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "onConnected: " + bundle);
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "onConnectionSuspended: " + i);
+        }
+    }
+
+    private void sendMessage(DataMap dataMap) {
+        final String APP_LAUNCH_PATH = "/glance/app_launch";
+
+        Log.d(TAG, "Attempting to send message from wearable... " + dataMap);
+        final byte[] rawData = dataMap.toByteArray();
+
+        if (mGoogleApiClient == null) return;
+
+        new Thread( new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes( mGoogleApiClient ).await();
+                for(Node node : nodes.getNodes()) {
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            mGoogleApiClient, node.getId(), APP_LAUNCH_PATH, rawData).await();
+                    if (result.getStatus().isSuccess())
+                        Log.d(TAG, "Message sent successfully");
+                    else
+                        Log.d(TAG, "Message failed");
+                }
+            }
+        }).start();
     }
 }
