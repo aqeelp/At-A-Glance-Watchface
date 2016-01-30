@@ -160,12 +160,10 @@ public class NotificationListener extends NotificationListenerService implements
     }
 
     private void init() {
-        this.snaps = 1;
-        this.gmails = 1;
-        this.textIds = new ArrayList<>(1);
-        this.textIds.add("Test user");
-        this.messageIds = new ArrayList<>(1);
-        this.messageIds.add("Test user");
+        this.snaps = 0;
+        this.gmails = 0;
+        this.textIds = new ArrayList<>(0);
+        this.messageIds = new ArrayList<>(0);
 
         // TODO: Broadcast initial values, or interpret current notifs?
         sendMessage(currentNotifications());
