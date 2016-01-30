@@ -36,9 +36,18 @@ public class ApplicationLauncher extends WearableListenerService {
             byte[] rawData = messageEvent.getData();
             DataMap dataMap = DataMap.fromByteArray(rawData);
             String packageName = dataMap.getString("package");
-            Intent intentToStart = getPackageManager().getLaunchIntentForPackage(packageName);
-            intentToStart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intentToStart);
+
+            if (packageName.equals("com.google.android.gm")) {
+                Intent intentToStart = new Intent(Intent.ACTION_VIEW);
+                intentToStart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                //intentToStart.setPackage("com.google.android.gm");
+                intentToStart.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
+                startActivity(intentToStart);
+            } else {
+                Intent intentToStart = getPackageManager().getLaunchIntentForPackage(packageName);
+                intentToStart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intentToStart);
+            }
         }
     }
 }

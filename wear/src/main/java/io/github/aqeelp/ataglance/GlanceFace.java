@@ -368,25 +368,22 @@ public class GlanceFace extends CanvasWatchFaceService implements
                 @TapType int tapType, int x, int y, long eventTime) {
             switch (tapType) {
                 case WatchFaceService.TAP_TYPE_TAP:
-                    DataMap activity = null;
-                    if ((57 <= x || x >= 57 + 53) && (46 <= y || y >= 46 + 53)) {
-                        activity = new DataMap();
+                    DataMap activity = new DataMap();
+                    if ((57 <= x && x <= 57 + 53) && (46 <= y && y <= 46 + 53)) {
                         if (textraCount > 0)
                             activity.putString("package", "com.textra");
-                    } else if ((210 <= x || x >= 210 + 53) && (42 <= y || y >= 42 + 53)) {
-                        activity = new DataMap();
+                    } else if ((210 <= x && x <= 210 + 53) && (42 <= y && y <= 42 + 53)) {
                         if (messengerCount > 0)
                             activity.putString("package", "com.facebook.orca");
-                    } else if ((57 <= x || x >= 57 + 53) && (222 <= y || y >= 222 + 53)) {
-                        activity = new DataMap();
+                    } else if ((57 <= x && x <= 57 + 53) && (222 <= y && y <= 222 + 53)) {
                         if (snapchatCount > 0)
                             activity.putString("package", "com.snapchat.android");
-                    } else if ((210 <= x || x >= 210 + 53) && (222 <= y || y >= 222 + 53)) {
-                        activity = new DataMap();
+                    } else if ((210 <= x && x <= 210 + 53) && (222 <= y && y <= 222 + 53)) {
                         if (emailCount > 0)
                             activity.putString("package", "com.google.android.gm");
                     }
-                    if (activity != null) sendMessage(activity);
+                    if (activity.size() > 0)
+                        sendMessage(activity);
                     break;
 
                 default:
