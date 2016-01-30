@@ -41,7 +41,7 @@ public class ApplicationLauncher extends WearableListenerService {
                 Intent intentToStart = new Intent(Intent.ACTION_VIEW);
                 intentToStart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 //intentToStart.setPackage("com.google.android.gm");
-                intentToStart.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
+                intentToStart.setClassName("com.google.android.gm", "com.google.android.gm.ConversationListActivityGmail");
                 startActivity(intentToStart);
             } else {
                 Intent intentToStart = getPackageManager().getLaunchIntentForPackage(packageName);
