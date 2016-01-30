@@ -1,5 +1,6 @@
 package io.github.aqeelp.ataglance;
 
+import android.app.Notification;
 import android.content.Intent;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
@@ -16,6 +17,7 @@ import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by aqeelp on 1/23/16.
@@ -28,7 +30,7 @@ public class NotificationListener extends NotificationListenerService implements
     ArrayList<String> textIds = new ArrayList<>();
     ArrayList<String> messageIds = new ArrayList<>();
     int snaps;
-    int gmails;
+    HashMap<String, Integer> emailIds = new HashMap<>();
     private GoogleApiClient mGoogleApiClient;
 
     @Override
@@ -75,7 +77,8 @@ public class NotificationListener extends NotificationListenerService implements
         if (name.equals("com.textra")) this.addTextra(sbn);
         if (name.equals("com.facebook.orca")) this.addMessenger(sbn);
         if (name.equals("com.snapchat.android")) this.addSnapchat(sbn);
-        if (name.equals("com.google.android.gm")) this.addGmail(sbn);
+        if (name.equals("com.google.android.gm")) this.addGmail(sbn, false);
+        if (name.equals("com.google.android.apps.inbox")) this.addGmail(sbn, true);
 
         sendMessage(currentNotifications());
     }
@@ -104,11 +107,25 @@ public class NotificationListener extends NotificationListenerService implements
     }
 
     // TODO: handle inbox as well
-    private void addGmail(StatusBarNotification sbn) {
-        if (this.gmails == 0) this.gmails++;
-        else {
-            String content = (String) sbn.getNotification().tickerText;
-            this.gmails = Integer.parseInt(content.split(" ")[0]);
+    private void addGmail(StatusBarNotification sbn, boolean isInbox) {
+        String emailAccount = sbn.getNotification().extras.getString(Notification.EXTRA_SUB_TEXT);
+        String title = sbn.getNotification().extras.getString(Notification.EXTRA_TITLE);
+
+        if (!emailIds.containsKey(emailAccount)) {
+            if (emailAccount != null) emailIds.put(emailAccount, 1);
+            try {
+                int buffer = Integer.parseInt(title.split(" ")[0]);
+                if (isInbox) emailAccount = sbn.getNotification().extras.getString(Notification.EXTRA_TEXT);
+                if (emailAccount != null) emailIds.put(emailAccount, buffer);
+            } catch (NumberFormatException e) {
+                if (emailAccount != null) emailIds.put(emailAccount, 1);
+            }
+        } else {
+            try {
+                int buffer = Integer.parseInt(title.split(" ")[0]);
+                if (isInbox) emailAccount = sbn.getNotification().extras.getString(Notification.EXTRA_TEXT);
+                if (emailAccount != null) emailIds.put(emailAccount, buffer);
+            } catch (NumberFormatException e) { }
         }
     }
 
@@ -156,12 +173,16 @@ public class NotificationListener extends NotificationListenerService implements
     }
 
     private void removeGmail(StatusBarNotification sbn) {
-        this.gmails = 0;
+        String emailAccount = sbn.getNotification().extras.getString(Notification.EXTRA_SUB_TEXT);
+        if (emailAccount == null) sbn.getNotification().extras.getString(Notification.EXTRA_TEXT);
+        if (!emailIds.containsKey(emailAccount)) return;
+
+        emailIds.remove(emailAccount);
     }
 
     private void init() {
         this.snaps = 0;
-        this.gmails = 0;
+        this.emailIds = new HashMap<>();
         this.textIds = new ArrayList<>(0);
         this.messageIds = new ArrayList<>(0);
 
@@ -175,7 +196,12 @@ public class NotificationListener extends NotificationListenerService implements
         notifs.putInt("textra", this.textIds.size());
         notifs.putInt("messenger", this.messageIds.size());
         notifs.putInt("snapchat", this.snaps);
-        notifs.putInt("emails", this.gmails);
+
+        int emailCount = 0;
+        for (String key : emailIds.keySet()) {
+            emailCount += emailIds.get(key);
+        }
+        notifs.putInt("Emails", emailCount);
 
         return notifs;
     }
