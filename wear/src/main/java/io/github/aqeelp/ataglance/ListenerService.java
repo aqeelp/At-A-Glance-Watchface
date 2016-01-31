@@ -27,7 +27,7 @@ public class ListenerService extends WearableListenerService {
         if (messageEvent.getPath().equalsIgnoreCase(NOTIF_PATH)) {
             GlanceFace.parseNotifPackage(dataMap);
         } else if (messageEvent.getPath().equalsIgnoreCase(BATTERY_PATH)) {
-            // GlanceFace.updateBatteryLevel(dataMap);
+            GlanceFace.updateBatteryLevel(dataMap);
         }
     }
 }

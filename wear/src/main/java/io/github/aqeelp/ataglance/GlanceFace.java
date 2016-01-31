@@ -67,6 +67,8 @@ public class GlanceFace extends CanvasWatchFaceService implements
 
     private static int textraCount, messengerCount, snapchatCount, emailCount;
 
+    private static int batteryPercent;
+
     /**
      * Update rate in milliseconds for interactive mode. We update once a second since seconds are
      * displayed in interactive mode.
@@ -164,9 +166,9 @@ public class GlanceFace extends CanvasWatchFaceService implements
             mSmallPaint.setTextAlign(Paint.Align.CENTER);
             mSmallPaint.setShadowLayer(2, 1, 1, Color.parseColor("#88000000"));
 
-            mBatteryPaint = mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
+            mBatteryPaint = createTextPaint(resources.getColor(R.color.digital_text));
             mBatteryPaint.setTextAlign(Paint.Align.CENTER);
-            mSmallPaint.setTextSize(20);
+            mBatteryPaint.setTextSize(16);
 
             mTime = Calendar.getInstance();
 
@@ -174,6 +176,7 @@ public class GlanceFace extends CanvasWatchFaceService implements
             messengerCount = 0;
             snapchatCount = 0;
             emailCount = 0;
+            batteryPercent = -1;
         }
 
         @Override
@@ -314,8 +317,8 @@ public class GlanceFace extends CanvasWatchFaceService implements
             drawIcon(snapchatCount, getResources().getDrawable(R.drawable.snapchat), 57, 222, canvas, bounds);
             drawIcon(emailCount, getResources().getDrawable(R.drawable.mail), 210, 222, canvas, bounds);
 
-            if (!mAmbient) {
-                canvas.drawText("70%", canvas.getWidth() / 2, 260, mTextPaint);
+            if (!mAmbient && batteryPercent > 0) {
+                canvas.drawText(batteryPercent + "%", canvas.getWidth() / 2, 265, mBatteryPaint);
             }
         }
 
@@ -429,6 +432,12 @@ public class GlanceFace extends CanvasWatchFaceService implements
         messengerCount = dataMap.getInt("messenger");
         snapchatCount = dataMap.getInt("snapchat");
         emailCount = dataMap.getInt("emails");
+    }
+
+    public static void updateBatteryLevel(DataMap dataMap) {
+        Log.d(TAG, "Battery update received... " + dataMap);
+
+        batteryPercent = dataMap.getInt("battery_pct");
     }
 
     @Override

@@ -1,6 +1,7 @@
 package io.github.aqeelp.ataglance;
 
 import android.app.Notification;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
@@ -36,8 +37,6 @@ public class NotificationListener extends NotificationListenerService implements
     private int snaps;
     private HashMap<String, Integer> emailIds = new HashMap<>();
     private GoogleApiClient mGoogleApiClient;
-    private Intent batteryStatus;
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -57,21 +56,24 @@ public class NotificationListener extends NotificationListenerService implements
                 .build();
         mGoogleApiClient.connect();
 
-        IntentFilter batteryFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        batteryStatus = this.registerReceiver(null, batteryFilter);
+        final Context SERVICE_CONTEXT = this;
 
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             private static final String PATH = "/glance/notifs";
 
             public void run() {
+                IntentFilter batteryFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                Intent batteryStatus = SERVICE_CONTEXT.registerReceiver(null, batteryFilter);
+
                 int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
                 int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 
-                float batteryPct = level / (float)scale;
+                float accurateBatteryPct = level / (float)scale;
 
                 DataMap dataMap = new DataMap();
-                dataMap.putInt("battery_pct", (int) batteryPct);
+                int batteryPct = Math.round(accurateBatteryPct * 100);
+                dataMap.putInt("battery_pct", batteryPct);
                 sendMessage(dataMap, BATTERY_PATH);
 
                 handler.postDelayed(this, 60000); //now is every 2 minutes
@@ -227,7 +229,7 @@ public class NotificationListener extends NotificationListenerService implements
         for (String key : emailIds.keySet()) {
             emailCount += emailIds.get(key);
         }
-        notifs.putInt("Emails", emailCount);
+        notifs.putInt("emails", emailCount);
 
         return notifs;
     }
