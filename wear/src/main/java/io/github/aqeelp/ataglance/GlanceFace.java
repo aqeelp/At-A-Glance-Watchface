@@ -116,6 +116,7 @@ public class GlanceFace extends CanvasWatchFaceService implements
         Paint mTextPaint;
         Paint mTintPaint;
         Paint mSmallPaint;
+        Paint mBatteryPaint;
 
         boolean mAmbient;
 
@@ -162,6 +163,10 @@ public class GlanceFace extends CanvasWatchFaceService implements
             mSmallPaint.setTextSize(30);
             mSmallPaint.setTextAlign(Paint.Align.CENTER);
             mSmallPaint.setShadowLayer(2, 1, 1, Color.parseColor("#88000000"));
+
+            mBatteryPaint = mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
+            mBatteryPaint.setTextAlign(Paint.Align.CENTER);
+            mSmallPaint.setTextSize(20);
 
             mTime = Calendar.getInstance();
 
@@ -272,7 +277,7 @@ public class GlanceFace extends CanvasWatchFaceService implements
 
             if (!mAmbient) {
                 Drawable background = getResources().getDrawable(R.drawable.winter_forest);
-                background.setBounds(-20, 0, 320 + 20, 290);
+                background.setBounds(-20, 0, 320 + 20, 290); // TODO: set this dynamically and preserve aspect ratio
                 background.draw(canvas);
 
                 // Darken the background:
@@ -308,6 +313,10 @@ public class GlanceFace extends CanvasWatchFaceService implements
             drawIcon(messengerCount, getResources().getDrawable(R.drawable.messenger), 210, 42, canvas, bounds);
             drawIcon(snapchatCount, getResources().getDrawable(R.drawable.snapchat), 57, 222, canvas, bounds);
             drawIcon(emailCount, getResources().getDrawable(R.drawable.mail), 210, 222, canvas, bounds);
+
+            if (!mAmbient) {
+                canvas.drawText("70%", canvas.getWidth() / 2, 260, mTextPaint);
+            }
         }
 
         private void drawIcon(int count, Drawable icon, int x, int y, Canvas canvas, Rect bounds) {

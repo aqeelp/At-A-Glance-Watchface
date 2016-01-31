@@ -2,7 +2,10 @@ package io.github.aqeelp.ataglance;
 
 import android.app.Notification;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
@@ -25,13 +28,16 @@ import java.util.HashMap;
 public class NotificationListener extends NotificationListenerService implements
         GoogleApiClient.ConnectionCallbacks {
     private final String TAG = "myTag";
-    private static final String PATH = "/glance/notifs";
+    private static final String NOTIF_PATH = "/glance/notifs";
+    private static final String BATTERY_PATH = "/glance/battery";
 
-    ArrayList<String> textIds = new ArrayList<>();
-    ArrayList<String> messageIds = new ArrayList<>();
-    int snaps;
-    HashMap<String, Integer> emailIds = new HashMap<>();
+    private ArrayList<String> textIds = new ArrayList<>();
+    private ArrayList<String> messageIds = new ArrayList<>();
+    private int snaps;
+    private HashMap<String, Integer> emailIds = new HashMap<>();
     private GoogleApiClient mGoogleApiClient;
+    private Intent batteryStatus;
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -50,6 +56,27 @@ public class NotificationListener extends NotificationListenerService implements
                 .addConnectionCallbacks(this)
                 .build();
         mGoogleApiClient.connect();
+
+        IntentFilter batteryFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        batteryStatus = this.registerReceiver(null, batteryFilter);
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            private static final String PATH = "/glance/notifs";
+
+            public void run() {
+                int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+
+                float batteryPct = level / (float)scale;
+
+                DataMap dataMap = new DataMap();
+                dataMap.putInt("battery_pct", (int) batteryPct);
+                sendMessage(dataMap, BATTERY_PATH);
+
+                handler.postDelayed(this, 60000); //now is every 2 minutes
+            }
+        }, 60000); //Every 120000 ms (2 minutes)
 
         this.init();
     }
@@ -80,7 +107,7 @@ public class NotificationListener extends NotificationListenerService implements
         if (name.equals("com.google.android.gm")) this.addGmail(sbn, false);
         if (name.equals("com.google.android.apps.inbox")) this.addGmail(sbn, true);
 
-        sendMessage(currentNotifications());
+        sendMessage(currentNotifications(), NOTIF_PATH);
     }
 
     private void addTextra(StatusBarNotification sbn) {
@@ -106,7 +133,6 @@ public class NotificationListener extends NotificationListenerService implements
         this.snaps++;
     }
 
-    // TODO: handle inbox as well
     private void addGmail(StatusBarNotification sbn, boolean isInbox) {
         String emailAccount = sbn.getNotification().extras.getString(Notification.EXTRA_SUB_TEXT);
         String title = sbn.getNotification().extras.getString(Notification.EXTRA_TITLE);
@@ -146,7 +172,7 @@ public class NotificationListener extends NotificationListenerService implements
         if (name.equals("com.snapchat.android")) this.removeSnapchat(sbn);
         if (name.equals("com.google.android.gm")) this.removeGmail(sbn);
 
-        sendMessage(currentNotifications());
+        sendMessage(currentNotifications(), NOTIF_PATH);
     }
 
     private void removeTextra(StatusBarNotification sbn) {
@@ -187,7 +213,7 @@ public class NotificationListener extends NotificationListenerService implements
         this.messageIds = new ArrayList<>(0);
 
         // TODO: Broadcast initial values, or interpret current notifs?
-        sendMessage(currentNotifications());
+        sendMessage(currentNotifications(), NOTIF_PATH);
     }
 
     private DataMap currentNotifications() {
@@ -206,9 +232,10 @@ public class NotificationListener extends NotificationListenerService implements
         return notifs;
     }
 
-    private void sendMessage(DataMap dataMap) {
-        Log.d(TAG, "Attempting to send notification update... " + dataMap);
+    private void sendMessage(DataMap dataMap, String path) {
+        Log.d(TAG, "Attempting to send message... " + dataMap);
         final byte[] rawData = dataMap.toByteArray();
+        final String PATH = path;
 
         new Thread( new Runnable() {
             @Override

@@ -14,19 +14,20 @@ import com.google.android.gms.wearable.WearableListenerService;
  */
 public class ListenerService extends WearableListenerService {
     private static final String TAG = "myTag";
-    private static final String PATH = "/glance/notifs";
+    private static final String NOTIF_PATH = "/glance/notifs";
+    private static final String BATTERY_PATH = "/glance/battery";
 
     @Override // WearableListenerService
     public void onMessageReceived(MessageEvent messageEvent) {
         Log.d(TAG, "Message received!");
 
-        if (!messageEvent.getPath().equalsIgnoreCase(PATH)) {
-            return;
-        }
-
         byte[] rawData = messageEvent.getData();
         DataMap dataMap = DataMap.fromByteArray(rawData);
 
-        GlanceFace.parseNotifPackage(dataMap);
+        if (messageEvent.getPath().equalsIgnoreCase(NOTIF_PATH)) {
+            GlanceFace.parseNotifPackage(dataMap);
+        } else if (messageEvent.getPath().equalsIgnoreCase(BATTERY_PATH)) {
+            // GlanceFace.updateBatteryLevel(dataMap);
+        }
     }
 }
