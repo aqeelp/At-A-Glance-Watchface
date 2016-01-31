@@ -56,7 +56,7 @@ public class NotificationListener extends NotificationListenerService implements
                 .build();
         mGoogleApiClient.connect();
 
-        final Context SERVICE_CONTEXT = this;
+        /* final Context SERVICE_CONTEXT = this;
 
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -78,7 +78,7 @@ public class NotificationListener extends NotificationListenerService implements
 
                 handler.postDelayed(this, 60000); //now is every 2 minutes
             }
-        }, 60000); //Every 120000 ms (2 minutes)
+        }, 60000); //Every 120000 ms (2 minutes) */
 
         this.init();
     }
@@ -93,11 +93,11 @@ public class NotificationListener extends NotificationListenerService implements
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
 
-        /*Log.i(TAG, "Notification posted:");
+        Log.i(TAG, "Notification posted:");
         Log.i(TAG, "ID: " + sbn.getId());
         Log.i(TAG, "Package name: " + sbn.getPackageName());
         Log.i(TAG, "Notification text: " + sbn.getNotification().tickerText);
-        Log.i(TAG, " ");*/
+        Log.i(TAG, " ");
 
         if (this.textIds == null) init();
 
@@ -123,12 +123,15 @@ public class NotificationListener extends NotificationListenerService implements
     private void addMessenger(StatusBarNotification sbn) {
         // TODO: handle group chat
 
-        String sender = (String) sbn.getNotification().tickerText;
-        sender = sender.split(":")[0];
+        String identifier = (String) sbn.getNotification().tickerText;
+        identifier = identifier.split(":")[0];
 
-        if (this.messageIds.contains(sender)) return;
+        if (identifier.contains(" to "))
+            identifier = identifier.split(" to ")[1];
 
-        this.messageIds.add(sender);
+        if (this.messageIds.contains(identifier)) return;
+
+        this.messageIds.add(identifier);
     }
 
     private void addSnapchat(StatusBarNotification sbn) {
@@ -188,12 +191,14 @@ public class NotificationListener extends NotificationListenerService implements
     private void removeMessenger(StatusBarNotification sbn) {
         // TODO: handle group chat
 
-        String sender = (String) sbn.getNotification().tickerText;
-        sender = sender.split(":")[0];
+        String identifier = (String) sbn.getNotification().tickerText;
+        identifier = identifier.split(":")[0];
 
-        if (this.messageIds.contains(sender)) {
-            this.messageIds.remove(sender);
-        }
+        if (identifier.contains(" to "))
+            identifier = identifier.split(" to ")[1];
+
+        if (this.messageIds.contains(identifier))
+            this.messageIds.remove(identifier);
     }
 
     private void removeSnapchat(StatusBarNotification sbn) {
