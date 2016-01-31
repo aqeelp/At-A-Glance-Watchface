@@ -189,8 +189,6 @@ public class NotificationListener extends NotificationListenerService implements
     }
 
     private void removeMessenger(StatusBarNotification sbn) {
-        // TODO: handle group chat
-
         String identifier = (String) sbn.getNotification().tickerText;
         identifier = identifier.split(":")[0];
 
